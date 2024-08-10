@@ -1,0 +1,10 @@
+o que é considerado aplicação para a arquitetura hexagonal ? 
+Regra de negocio e a logica essencial da aplicação
+
+
+
+
+
+
+
+
