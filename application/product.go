@@ -3,6 +3,8 @@ package application
 import (
 	"errors"
 
+	uuid "github.com/satori/go.uuid"
+
 	"github.com/asaskevich/govalidator"
 )
 
@@ -11,13 +13,32 @@ func init() {
 }
 
 type ProductInterface interface {
-	isValid() (bool, error)
+	IsValid() (bool, error)
 	Enabled() error
 	Disable() error
 	GetId() string
 	GetName() string
 	GetStatus() string
 	GetPrice() float64
+}
+
+type ProductServiceInterface interface {
+	Get(id string) (ProductInterface, error)
+	Create(name string, price float64) (ProductInterface, error)
+	Enable(product Product) (ProductInterface, error)
+	Disable(product Product) (ProductInterface, error)
+}
+
+type ProductReader interface {
+	Get(id string) (ProductInterface, error)
+}
+
+type ProductWriter interface {
+	Save(product ProductInterface) (ProductInterface, error)
+}
+type ProductPersistenseInterface interface {
+	ProductReader
+	ProductWriter
 }
 
 const (
@@ -29,12 +50,20 @@ type Product struct {
 	Id     string  `valid:"uuidv4"`
 	Name   string  `valid:"required"`
 	Price  float64 `valid:"float,optional"`
-	Status string  `valid:required`
+	Status string  `valid:"required"`
 }
 
-func (p *Product) isValid() (bool, error) {
+func NewProduct() *Product {
+	product := Product{
+		Id:     uuid.NewV4().String(),
+		Status: DISABLE,
+	}
+	return &product
+}
+
+func (p *Product) IsValid() (bool, error) {
 	if p.Status == "" {
-		p.Status = ENABLED
+		p.Status = DISABLE
 	}
 
 	if p.Status != ENABLED && p.Status != DISABLE {
